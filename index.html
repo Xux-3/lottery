@@ -376,8 +376,7 @@
             </div>
             
             <button class="lottery-button" id="spinButton">🎲 开始抽奖</button>
-            <!-- <button class="lottery-button" id="resetButton" style="background: linear-gradient(45deg, #6c757d, #8d9498);">🔄 重新开始</button>
-             -->
+            
             <div style="color: rgba(255,255,255,0.8); margin-top: 20px; font-size: 0.9rem;">
                 💡 提示：每人每天可抽奖1次，中奖后请联系客服领取奖品
             </div>
@@ -435,13 +434,12 @@
             constructor() {
                 this.wheel = document.getElementById('wheel');
                 this.spinButton = document.getElementById('spinButton');
-                this.resetButton = document.getElementById('resetButton');
                 this.resultModal = document.getElementById('resultModal');
                 this.isSpinning = false;
                 this.spinCount = 0;
-                this.maxSpins = 3;
+                this.maxSpins = 1;
                 
-                // 动态奖品数组 - 你可以随时修改这个数组
+                // 动态奖品数组
                 this.prizes = [
                     { name: '神秘大奖', emoji: '🎁', message: '恭喜获得神秘大奖！请联系客服领取！', color: '#ff6b6b' },
                     { name: '88元红包', emoji: '💰', message: '恭喜获得88元现金红包！', color: '#4ecdc4' },
@@ -452,65 +450,55 @@
             }
             
             init() {
-                this.createWheel(); // 动态创建转盘
+                this.createWheel();
                 this.createParticles();
                 this.setupEventListeners();
                 this.updateSpinCount();
             }
             
             createWheel() {
-                // 清空现有的转盘内容
                 this.wheel.innerHTML = '';
                 
                 const segmentCount = this.prizes.length;
                 const segmentAngle = 360 / segmentCount;
-                const radius = 140; // 转盘半径
+                const radius = 140;
                 const centerX = 150;
                 const centerY = 150;
                 
-                // 创建SVG元素
                 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                 svg.setAttribute('class', 'wheel-svg');
                 svg.setAttribute('viewBox', '0 0 300 300');
                 
                 this.prizes.forEach((prize, index) => {
-                    // 计算扇形的起始和结束角度
-                    const startAngle = (segmentAngle * index - 90) * (Math.PI / 180); // -90度让第一个扇形从顶部开始
+                    const startAngle = (segmentAngle * index - 90) * (Math.PI / 180);
                     const endAngle = (segmentAngle * (index + 1) - 90) * (Math.PI / 180);
                     
-                    // 计算扇形路径的坐标点
                     const x1 = centerX + radius * Math.cos(startAngle);
                     const y1 = centerY + radius * Math.sin(startAngle);
                     const x2 = centerX + radius * Math.cos(endAngle);
                     const y2 = centerY + radius * Math.sin(endAngle);
                     
-                    // 判断是否为大弧
                     const largeArcFlag = segmentAngle > 180 ? 1 : 0;
                     
-                    // 创建扇形路径
                     const pathData = [
-                        `M ${centerX} ${centerY}`, // 移动到中心点
-                        `L ${x1} ${y1}`, // 画线到起始点
-                        `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`, // 画弧
-                        'Z' // 闭合路径
+                        `M ${centerX} ${centerY}`,
+                        `L ${x1} ${y1}`,
+                        `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+                        'Z'
                     ].join(' ');
                     
-                    // 创建路径元素
                     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
                     path.setAttribute('d', pathData);
                     path.setAttribute('fill', prize.color);
                     path.setAttribute('class', 'wheel-segment-path');
                     
-                    // 添加到SVG
                     svg.appendChild(path);
                     
-                    // 计算文字位置（扇形中心）
                     const textAngle = (startAngle + endAngle) / 2;
-                    const textRadius = radius * 0.7; // 文字距离中心的距离
+                    const textRadius = radius * 0.7;
                     const textX = centerX + textRadius * Math.cos(textAngle);
                     const textY = centerY + textRadius * Math.sin(textAngle);
                     
-                    // 创建文字元素 - emoji
                     const emojiText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                     emojiText.setAttribute('x', textX);
                     emojiText.setAttribute('y', textY - 8);
@@ -519,7 +507,6 @@
                     emojiText.textContent = prize.emoji;
                     svg.appendChild(emojiText);
                     
-                    // 创建文字元素 - 名称
                     const nameText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                     nameText.setAttribute('x', textX);
                     nameText.setAttribute('y', textY + 12);
@@ -546,9 +533,14 @@
             }
             
             setupEventListeners() {
+                // 抽奖按钮事件
                 this.spinButton.addEventListener('click', () => this.spin());
-                this.resetButton.addEventListener('click', () => this.reset());
-                document.getElementById('closeModal').addEventListener('click', () => this.closeModal());
+                
+                // 关闭弹窗按钮事件
+                const closeButton = document.getElementById('closeModal');
+                if (closeButton) {
+                    closeButton.addEventListener('click', () => this.closeModal());
+                }
                 
                 // 点击模态框背景关闭
                 this.resultModal.addEventListener('click', (e) => {
@@ -565,19 +557,15 @@
                 this.spinButton.disabled = true;
                 this.spinButton.textContent = '🎲 抽奖中...';
                 
-                // 随机选择奖品
                 const prizeIndex = Math.floor(Math.random() * this.prizes.length);
                 const segmentAngle = 360 / this.prizes.length;
-                const targetAngle = segmentAngle * prizeIndex + (segmentAngle / 2); // 指向扇形中心
+                const targetAngle = segmentAngle * prizeIndex + (segmentAngle / 2);
                 
-                // 计算旋转角度（多转几圈增加效果）
-                const spins = 5 + Math.random() * 3; // 5-8圈
-                const finalAngle = spins * 360 + (360 - targetAngle); // 反向计算，因为指针在上方
+                const spins = 5 + Math.random() * 3;
+                const finalAngle = spins * 360 + (360 - targetAngle);
                 
-                // 应用旋转
                 this.wheel.style.transform = `rotate(${finalAngle}deg)`;
                 
-                // 4秒后显示结果
                 setTimeout(() => {
                     this.showResult(prizeIndex);
                     this.spinCount++;
@@ -586,14 +574,12 @@
                     this.spinButton.disabled = false;
                     this.spinButton.textContent = '🎲 开始抽奖';
                     
-                    // 如果奖品名称包含"再来一次"，不增加抽奖次数
                     if (this.prizes[prizeIndex].name.includes('再来一次')) {
                         this.spinCount--;
                         this.updateSpinCount();
                     }
                 }, 4000);
                 
-                // 添加庆祝效果
                 this.createCelebration();
             }
             
@@ -603,21 +589,11 @@
                 document.getElementById('resultText').textContent = prize.message;
                 this.resultModal.style.display = 'flex';
                 
-                // 播放音效
                 this.playSound();
             }
             
             closeModal() {
                 this.resultModal.style.display = 'none';
-            }
-            
-            reset() {
-                this.spinCount = 0;
-                this.wheel.style.transform = 'rotate(0deg)';
-                this.updateSpinCount();
-                this.isSpinning = false;
-                this.spinButton.disabled = false;
-                this.spinButton.textContent = '🎲 开始抽奖';
             }
             
             updateSpinCount() {
@@ -630,22 +606,7 @@
                 }
             }
             
-            // 添加奖品的方法
-            addPrize(name, emoji, message, color) {
-                this.prizes.push({ name, emoji, message, color });
-                this.createWheel(); // 重新创建转盘
-            }
-            
-            // 移除奖品的方法
-            removePrize(index) {
-                if (this.prizes.length > 1) { // 至少保留一个奖品
-                    this.prizes.splice(index, 1);
-                    this.createWheel(); // 重新创建转盘
-                }
-            }
-            
             createCelebration() {
-                // 创建庆祝粒子
                 for (let i = 0; i < 20; i++) {
                     setTimeout(() => {
                         const particle = document.createElement('div');
@@ -670,7 +631,6 @@
             }
             
             playSound() {
-                // 创建简单的成功音效
                 try {
                     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     const oscillator = audioContext.createOscillator();
@@ -712,11 +672,7 @@
         
         // 页面加载完成后初始化
         window.addEventListener('load', () => {
-            const game = new LotteryGame();
-            
-            // 示例：动态添加更多奖品（可选）
-            // game.addPrize('超级大奖', '🏆', '恭喜获得超级大奖！', '#FFD700');
-            // game.addPrize('再来一次', '🎯', '幸运女神眷顾，再来一次机会！', '#ff9ff3');
+            new LotteryGame();
         });
         
         // 添加页面跳转功能
