@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎉 幸运大抽奖 - 惊喜等你来拿！</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* 动态背景 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3);
+            background-size: 400% 400%;
+            animation: gradientShift 10s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* 浮动粒子 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: float 8s infinite linear;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        /* 主容器 */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 头部 */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
+        }
+        
+        .main-title {
+            font-size: 3.5rem;
+            color: white;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+            to { text-shadow: 0 4px 20px rgba(255,255,255,0.5), 0 0 30px rgba(255,255,255,0.3); }
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
+        }
+        
+        /* 抽奖区域 */
+        .lottery-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideInUp 1s ease-out 0.3s both;
+        }
+        
+        /* 转盘样式 */
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 30px auto;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 8px solid #fff;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        /* SVG转盘样式 */
+        .wheel-svg {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .wheel-segment-path {
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+        
+        .wheel-segment-path:hover {
+            opacity: 0.8;
+        }
+        
+        .wheel-text {
+            font-family: 'Poppins', sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+            fill: white;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        /* 指针 */
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #fff;
+            z-index: 10;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        /* 抽奖按钮 */
+        .lottery-button {
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+            margin: 20px 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .lottery-button:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+        }
+        
+        .lottery-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* 微信区域 */
+        .wechat-section {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideInUp 1s ease-out 0.6s both;
+        }
+        
+        .wechat-title {
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .qr-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+        
+        .qr-code {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .qr-code:hover {
+            transform: scale(1.05);
+        }
+        
+        .qr-placeholder {
+            width: 150px;
+            height: 150px;
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        
+        .wechat-info {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        /* 结果弹窗 */
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .result-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: modalPop 0.5s ease-out;
+        }
+        
+        @keyframes modalPop {
+            from { transform: scale(0.7); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .result-emoji {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .result-text {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .close-button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        /* 动画 */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2.5rem;
+            }
+            
+            .wheel-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .lottery-section,
+            .wechat-section {
+                padding: 30px 20px;
+            }
+            
+            .qr-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 动态背景 -->
+    <div class="bg-animation"></div>
+    
+    <!-- 粒子效果 -->
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <h1 class="main-title">🎉 幸运大抽奖 🎉</h1>
+            <p class="subtitle">转动幸运转盘，赢取丰厚奖品！</p>
+        </div>
+        
+        <!-- 抽奖区域 -->
+        <div class="lottery-section">
+            <h2 style="color: white; margin-bottom: 20px; font-size: 1.8rem;">🎯 幸运转盘</h2>
+            
+            <!-- 转盘 -->
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel">
+                    <!-- SVG转盘将在这里生成 -->
+                </div>
+            </div>
+            
+            <button class="lottery-button" id="spinButton">🎲 开始抽奖</button>
+            <!-- <button class="lottery-button" id="resetButton" style="background: linear-gradient(45deg, #6c757d, #8d9498);">🔄 重新开始</button>
+             -->
+            <div style="color: rgba(255,255,255,0.8); margin-top: 20px; font-size: 0.9rem;">
+                💡 提示：每人每天可抽奖1次，中奖后请联系客服领取奖品
+            </div>
+        </div>
+        
+        <!-- 微信区域 -->
+        <div class="wechat-section">
+            <h2 class="wechat-title">📱 添加微信好友</h2>
+            <p class="wechat-info">
+                扫描下方二维码添加微信好友<br>
+                🎁 领取专属福利和最新活动信息<br>
+                💬 获得一对一客服支持
+            </p>
+            
+            <div class="qr-container">
+                <div class="qr-code">
+                    <div class="qr-placeholder">
+                        微信二维码<br>
+                        (请替换为真实二维码)
+                    </div>
+                </div>
+                <div style="color: white;">
+                    <h3 style="margin-bottom: 15px;">🔥 添加好友即可获得：</h3>
+                    <ul style="text-align: left; list-style: none; padding: 0;">
+                        <li>✅ 新人专属红包</li>
+                        <li>✅ 每日签到奖励</li>
+                        <li>✅ VIP专属活动</li>
+                        <li>✅ 优先客服支持</li>
+                        <li>✅ 独家内部消息</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 10px; margin-top: 20px;">
+                <p style="color: white; font-size: 1.1rem;">
+                    📞 客服微信：<strong>Li_</strong><br>
+                    🕐 在线时间：9:00-22:00<br>
+                    💌 或直接扫码添加，备注"抽奖活动"
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 结果弹窗 -->
+    <div class="result-modal" id="resultModal">
+        <div class="result-content">
+            <div class="result-emoji" id="resultEmoji">🎉</div>
+            <div class="result-text" id="resultText">恭喜中奖！</div>
+            <button class="close-button" id="closeModal">确定</button>
+        </div>
+    </div>
+
+    <script>
+        class LotteryGame {
+            constructor() {
+                this.wheel = document.getElementById('wheel');
+                this.spinButton = document.getElementById('spinButton');
+                this.resetButton = document.getElementById('resetButton');
+                this.resultModal = document.getElementById('resultModal');
+                this.isSpinning = false;
+                this.spinCount = 0;
+                this.maxSpins = 3;
+                
+                // 动态奖品数组 - 你可以随时修改这个数组
+                this.prizes = [
+                    { name: '神秘大奖', emoji: '🎁', message: '恭喜获得神秘大奖！请联系客服领取！', color: '#ff6b6b' },
+                    { name: '88元红包', emoji: '💰', message: '恭喜获得88元现金红包！', color: '#4ecdc4' },
+                    { name: '游戏皮肤', emoji: '🎮', message: '恭喜获得限量版游戏皮肤！', color: '#45b7d1' }
+                ];
+                
+                this.init();
+            }
+            
+            init() {
+                this.createWheel(); // 动态创建转盘
+                this.createParticles();
+                this.setupEventListeners();
+                this.updateSpinCount();
+            }
+            
+            createWheel() {
+                // 清空现有的转盘内容
+                this.wheel.innerHTML = '';
+                
+                const segmentCount = this.prizes.length;
+                const segmentAngle = 360 / segmentCount;
+                const radius = 140; // 转盘半径
+                const centerX = 150;
+                const centerY = 150;
+                
+                // 创建SVG元素
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('class', 'wheel-svg');
+                svg.setAttribute('viewBox', '0 0 300 300');
+                
+                this.prizes.forEach((prize, index) => {
+                    // 计算扇形的起始和结束角度
+                    const startAngle = (segmentAngle * index - 90) * (Math.PI / 180); // -90度让第一个扇形从顶部开始
+                    const endAngle = (segmentAngle * (index + 1) - 90) * (Math.PI / 180);
+                    
+                    // 计算扇形路径的坐标点
+                    const x1 = centerX + radius * Math.cos(startAngle);
+                    const y1 = centerY + radius * Math.sin(startAngle);
+                    const x2 = centerX + radius * Math.cos(endAngle);
+                    const y2 = centerY + radius * Math.sin(endAngle);
+                    
+                    // 判断是否为大弧
+                    const largeArcFlag = segmentAngle > 180 ? 1 : 0;
+                    
+                    // 创建扇形路径
+                    const pathData = [
+                        `M ${centerX} ${centerY}`, // 移动到中心点
+                        `L ${x1} ${y1}`, // 画线到起始点
+                        `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`, // 画弧
+                        'Z' // 闭合路径
+                    ].join(' ');
+                    
+                    // 创建路径元素
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', pathData);
+                    path.setAttribute('fill', prize.color);
+                    path.setAttribute('class', 'wheel-segment-path');
+                    
+                    // 添加到SVG
+                    svg.appendChild(path);
+                    
+                    // 计算文字位置（扇形中心）
+                    const textAngle = (startAngle + endAngle) / 2;
+                    const textRadius = radius * 0.7; // 文字距离中心的距离
+                    const textX = centerX + textRadius * Math.cos(textAngle);
+                    const textY = centerY + textRadius * Math.sin(textAngle);
+                    
+                    // 创建文字元素 - emoji
+                    const emojiText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    emojiText.setAttribute('x', textX);
+                    emojiText.setAttribute('y', textY - 8);
+                    emojiText.setAttribute('class', 'wheel-text');
+                    emojiText.setAttribute('font-size', '20');
+                    emojiText.textContent = prize.emoji;
+                    svg.appendChild(emojiText);
+                    
+                    // 创建文字元素 - 名称
+                    const nameText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    nameText.setAttribute('x', textX);
+                    nameText.setAttribute('y', textY + 12);
+                    nameText.setAttribute('class', 'wheel-text');
+                    nameText.setAttribute('font-size', '12');
+                    nameText.textContent = prize.name;
+                    svg.appendChild(nameText);
+                });
+                
+                this.wheel.appendChild(svg);
+            }
+            
+            createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                
+                for (let i = 0; i < 30; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 8 + 's';
+                    particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            setupEventListeners() {
+                this.spinButton.addEventListener('click', () => this.spin());
+                this.resetButton.addEventListener('click', () => this.reset());
+                document.getElementById('closeModal').addEventListener('click', () => this.closeModal());
+                
+                // 点击模态框背景关闭
+                this.resultModal.addEventListener('click', (e) => {
+                    if (e.target === this.resultModal) {
+                        this.closeModal();
+                    }
+                });
+            }
+            
+            spin() {
+                if (this.isSpinning || this.spinCount >= this.maxSpins) return;
+                
+                this.isSpinning = true;
+                this.spinButton.disabled = true;
+                this.spinButton.textContent = '🎲 抽奖中...';
+                
+                // 随机选择奖品
+                const prizeIndex = Math.floor(Math.random() * this.prizes.length);
+                const segmentAngle = 360 / this.prizes.length;
+                const targetAngle = segmentAngle * prizeIndex + (segmentAngle / 2); // 指向扇形中心
+                
+                // 计算旋转角度（多转几圈增加效果）
+                const spins = 5 + Math.random() * 3; // 5-8圈
+                const finalAngle = spins * 360 + (360 - targetAngle); // 反向计算，因为指针在上方
+                
+                // 应用旋转
+                this.wheel.style.transform = `rotate(${finalAngle}deg)`;
+                
+                // 4秒后显示结果
+                setTimeout(() => {
+                    this.showResult(prizeIndex);
+                    this.spinCount++;
+                    this.updateSpinCount();
+                    this.isSpinning = false;
+                    this.spinButton.disabled = false;
+                    this.spinButton.textContent = '🎲 开始抽奖';
+                    
+                    // 如果奖品名称包含"再来一次"，不增加抽奖次数
+                    if (this.prizes[prizeIndex].name.includes('再来一次')) {
+                        this.spinCount--;
+                        this.updateSpinCount();
+                    }
+                }, 4000);
+                
+                // 添加庆祝效果
+                this.createCelebration();
+            }
+            
+            showResult(prizeIndex) {
+                const prize = this.prizes[prizeIndex];
+                document.getElementById('resultEmoji').textContent = prize.emoji;
+                document.getElementById('resultText').textContent = prize.message;
+                this.resultModal.style.display = 'flex';
+                
+                // 播放音效
+                this.playSound();
+            }
+            
+            closeModal() {
+                this.resultModal.style.display = 'none';
+            }
+            
+            reset() {
+                this.spinCount = 0;
+                this.wheel.style.transform = 'rotate(0deg)';
+                this.updateSpinCount();
+                this.isSpinning = false;
+                this.spinButton.disabled = false;
+                this.spinButton.textContent = '🎲 开始抽奖';
+            }
+            
+            updateSpinCount() {
+                const remaining = this.maxSpins - this.spinCount;
+                if (remaining <= 0) {
+                    this.spinButton.textContent = '🚫 今日抽奖已用完';
+                    this.spinButton.disabled = true;
+                } else {
+                    this.spinButton.textContent = `🎲 开始抽奖 (剩余${remaining}次)`;
+                }
+            }
+            
+            // 添加奖品的方法
+            addPrize(name, emoji, message, color) {
+                this.prizes.push({ name, emoji, message, color });
+                this.createWheel(); // 重新创建转盘
+            }
+            
+            // 移除奖品的方法
+            removePrize(index) {
+                if (this.prizes.length > 1) { // 至少保留一个奖品
+                    this.prizes.splice(index, 1);
+                    this.createWheel(); // 重新创建转盘
+                }
+            }
+            
+            createCelebration() {
+                // 创建庆祝粒子
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        const particle = document.createElement('div');
+                        particle.style.position = 'fixed';
+                        particle.style.left = Math.random() * window.innerWidth + 'px';
+                        particle.style.top = Math.random() * window.innerHeight + 'px';
+                        particle.style.width = '8px';
+                        particle.style.height = '8px';
+                        particle.style.background = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'][Math.floor(Math.random() * 5)];
+                        particle.style.borderRadius = '50%';
+                        particle.style.pointerEvents = 'none';
+                        particle.style.zIndex = '999';
+                        particle.style.animation = 'explode 2s ease-out forwards';
+                        
+                        document.body.appendChild(particle);
+                        
+                        setTimeout(() => {
+                            particle.remove();
+                        }, 2000);
+                    }, i * 50);
+                }
+            }
+            
+            playSound() {
+                // 创建简单的成功音效
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2);
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                } catch (e) {
+                    console.log('音效播放失败');
+                }
+            }
+        }
+        
+        // 添加爆炸动画样式
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes explode {
+                0% {
+                    transform: scale(0) translate(0, 0);
+                    opacity: 1;
+                }
+                100% {
+                    transform: scale(1) translate(${Math.random() * 200 - 100}px, ${Math.random() * 200 - 100}px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', () => {
+            const game = new LotteryGame();
+            
+            // 示例：动态添加更多奖品（可选）
+            // game.addPrize('超级大奖', '🏆', '恭喜获得超级大奖！', '#FFD700');
+            // game.addPrize('再来一次', '🎯', '幸运女神眷顾，再来一次机会！', '#ff9ff3');
+        });
+        
+        // 添加页面跳转功能
+        function addNavigationLinks() {
+            const nav = document.createElement('div');
+            nav.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1000;
+                display: flex;
+                gap: 10px;
+            `;
+            
+            const homeLink = document.createElement('a');
+            homeLink.href = '#';
+            homeLink.textContent = '🏠 首页';
+            homeLink.style.cssText = `
+                background: rgba(255,255,255,0.2);
+                color: white;
+                padding: 10px 15px;
+                border-radius: 20px;
+                text-decoration: none;
+                backdrop-filter: blur(10px);
+                transition: all 0.3s ease;
+            `;
+            
+            homeLink.addEventListener('mouseenter', () => {
+                homeLink.style.background = 'rgba(255,255,255,0.3)';
+            });
+            
+            homeLink.addEventListener('mouseleave', () => {
+                homeLink.style.background = 'rgba(255,255,255,0.2)';
+            });
+            
+            nav.appendChild(homeLink);
+            document.body.appendChild(nav);
+        }
+        
+        // 添加导航链接
+        addNavigationLinks();
+        
+        // 微信二维码点击提示
+        document.querySelector('.qr-placeholder').addEventListener('click', () => {
+            alert('请将此处替换为真实的微信二维码图片！\n\n使用方法：\n1. 生成你的微信二维码\n2. 将图片上传到服务器\n3. 替换 qr-placeholder 为 <img> 标签');
+        });
+    </script>
+</body>
+</html>
